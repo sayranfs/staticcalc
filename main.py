@@ -1,13 +1,17 @@
 import math
 import numpy as np
+import matplotlib.pyplot as plt
+import random as rd
+plt.style.use('seaborn-v0_8')
 
 # Introdução ao script fazendo o questionamento de qual operação deseja realizar.
 way = input("* Selecione a operação estatística que deseja fazer. *\n"
-                "[1] Média\n"
-                "[2] Mediana\n"
-                "[3] Desvio padrão\n"
-                "[4] Variância\n"
-                "[5] Moda\n")
+            "[1] Média\n"
+            "[2] Mediana\n"
+            "[3] Desvio padrão\n"
+            "[4] Variância\n"
+            "[5] Moda\n"
+            "[0] GRÁFICO (Média e desvio padrão)\n")
 
 
 # ---------- Funções ----------
@@ -23,28 +27,34 @@ def med(sequence: list):
 def var(med, desvios: list):
     sum = 0
     for i in desvios:
-        sum += abs(i - med)
+        sum += (i - med)**2
     return sum / len(desvios)
 
 
 # Função para introduzir o script de forma prática;
 def intro(nome: str):
-    seq = input(f"Digite a sequência que deseja calcular {nome} (separe com espaço):\n").split(' ')
-    x = seq.count('')
-    i = 0
-    while i < x:
-        seq.remove('')
-        i += 1
-    return list(np.array(seq, dtype=int))
+    sequence = input(f"Digite a sequência que deseja calcular {nome} ou digite 'rand' para gerar aleatoriamente! (separe com espaço):\n").split(' ')
+    if sequence == ['rand']:
+        rand = [rd.randint(0, 100) for i in range(30)]
+        print(rand)
+        return rand
+    else:
+        x = sequence.count('')
+        i = 0
+        while i < x:
+            sequence.remove('')
+            i += 1
+        return list(np.array(sequence, dtype=int))
 
-# Função para o cálculo da moda da sequência.
-def moda(seq: list, tipo: int):
+
+# Função para o cálculo da moda da sequência;
+def moda(sequence: list, tipo: int):
     qnt = []
     norepeat = []
     mo = []
-    for i in seq:
+    for i in sequence:
         if not i in norepeat:
-            qnt.append(seq.count(i))
+            qnt.append(sequence.count(i))
             norepeat.append(i)
     y = qnt.copy()
     for i in y:
@@ -69,45 +79,73 @@ def moda(seq: list, tipo: int):
         return max(y)
 
 
+# Função que calcula a mediana da sequência;
+def mediana(sequence: list):
+    if len(sequence) % 2 == 1:
+        return sequence[len(sequence) // 2]
+    else:
+        center1 = sequence[(len(sequence) // 2) - 1]
+        center2 = sequence[len(sequence) // 2]
+        return (center1 + center2) / 2
+
+
+# Função auxiliar da construção do gráfico.
+def plotar(x, txt: str):
+    plt.plot(np.linspace(x, x))
+    plt.text(0, x, f"{txt} {round(x, 2)}", c="red", fontsize=12)
+
+
+
+
 # ---------- Código ----------
 # Primeira opção: média da sequência;
 if way == '1':
     seq = intro("a MÉDIA")
-    print(f"A média encontrada foi: {med(seq)}.")
+    print(f"A média encontrada foi: {round(med(seq), 2)}.")
+
 
 # Segunda opção: mediana da sequência;
 elif way == '2':
     seq = intro("a MEDIANA")
-    if len(seq) % 2 == 1:
-        center = seq[len(seq) // 2]
-        print(f"A mediana encontrada foi: {center}.")
-    else:
-        center1 = seq[(len(seq) // 2) - 1]
-        center2 = seq[len(seq) // 2]
-        mediana = (center1 + center2) / 2
-        print(f"A mediana encontrada foi: {mediana}.")
+    print(f"A mediana encontrada foi: {mediana(seq)}.")
 
 # Terceira opção: desvio padrão da sequência;
 elif way == '3':
     seq = intro("o DESVIO PADRÃO")
-    dp = round(math.sqrt(var(med(seq), seq)), 2)
-    print(f"O desvio padrão encontrado foi de: {dp}.")
+    print(f"O desvio padrão encontrado foi de: {round(math.sqrt(var(med(seq), seq)), 2)}.")
+
 
 # Quarta opção: variância da sequência;
 elif way == '4':
     seq = intro("a VARIÂNCIA")
-    print(f"A variância encontrado foi de: {var(med(seq), seq)}.")
+    print(f"A variância encontrado foi de: {round(var(med(seq), seq), 2)}.")
 
-# Quinta e última opção: moda da sequência.
+
+# Quinta opção: moda da sequência.
 elif way == '5':
     seq = intro("a MODA")
     nums = moda(seq, 1)
     title = moda(seq, 2)
     rep = moda(seq, 3)
     if title == 'AMODAL':
-        print(f"A sequência é AMODAL, não possuindo moda.")
+        print("A sequência é AMODAL, não possuindo moda.")
     else:
         print(f"A sequência é {title} com a(s) moda(s) sendo {nums} se repetindo {rep} vezes.")
+
+
+# Sexta opção: construção de gráfico com informações.
+elif way == '0':
+    seq = intro("o GRÁFICO")
+    x = []
+    for i in range(len(seq)):
+        x.append(i)
+    dp = math.sqrt(var(med(seq), seq))
+    plt.scatter(x, np.array(seq))
+    plotar(med(seq), "Média:")
+    plotar(med(seq) + dp, "Média + DP:")
+    plotar(med(seq) - dp, "Média - DP:")
+    plotar(mediana(seq), "Mediana:")
+    plt.show()
 
 # Caso dê um número/caractere fora do esperado, encerra a execução.
 else:
